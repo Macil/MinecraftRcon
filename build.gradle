@@ -4,6 +4,7 @@ group 'tech.macil.minecraft.rcon'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'net.researchgate.release'
 
 sourceCompatibility = 1.8
 
@@ -22,10 +23,14 @@ dependencies {
 buildscript {
     repositories {
         mavenCentral()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
 
     dependencies {
         classpath 'org.ajoberstar:gradle-git:1.6.0'
+        classpath 'net.researchgate:gradle-release:2.4.0'
     }
 }
 
