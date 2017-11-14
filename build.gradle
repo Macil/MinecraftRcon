@@ -58,3 +58,5 @@ processResources {
         exclude 'plugin.yml'
     }
 }
+
+checkSnapshotDependencies.enabled = false
