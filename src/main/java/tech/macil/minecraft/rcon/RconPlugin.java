@@ -1,7 +1,6 @@
 package tech.macil.minecraft.rcon;
 
 import com.google.common.base.Charsets;
-import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import tech.macil.util.NLRequiringBufferedReader;
@@ -14,17 +13,23 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class RconPlugin extends JavaPlugin {
     private static final int SOCKET_BACKLOG = 20;
+    private static final int THREAD_COUNT = 4;
     private static final String EXPECTED_GREETING = "Minecraft-Rcon";
     private ServerSocket socket;
+    //    private ExecutorService threadPool;
+    private static final Executor outputFlusher = Executors.newWorkStealingPool(THREAD_COUNT);
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
+//        threadPool = Executors.newWorkStealingPool(THREAD_COUNT);
         String listenAddress = getConfig().getString("listenAddress");
         int port = getConfig().getInt("port");
 
@@ -84,32 +89,38 @@ public class RconPlugin extends JavaPlugin {
                     // execute half of a command.
                     BufferedReader input = new NLRequiringBufferedReader(
                             new InputStreamReader(connection.getInputStream(), Charsets.UTF_8));
-                    PrintWriter output = new PrintWriter(connection.getOutputStream(), false);
 
-                    CommandSender sender = new RconCommandSender(RconPlugin.this, output);
+                    try (OffThreadWriter output = new OffThreadWriter(
+                            new PrintWriter(connection.getOutputStream(), false),
+                            getLogger(),
+                            outputFlusher
+                    )) {
+                        CommandSender sender = new RconCommandSender(RconPlugin.this, output);
 
-                    String greeting = input.readLine();
-                    if (!EXPECTED_GREETING.equals(greeting)) {
-                        return;
-                    }
+                        String greeting = input.readLine();
+                        if (!EXPECTED_GREETING.equals(greeting)) {
+                            return;
+                        }
 
-                    input.lines().forEach(line -> {
-                        getLogger().log(Level.INFO, "rcon("+connection.getRemoteSocketAddress()+"): " + line);
-                        try {
-                            if (!getServer().dispatchCommand(sender, line)) {
-                                output.write("Command not found\n");
+                        input.lines().forEach(line -> {
+                            getLogger().log(Level.INFO, "rcon(" + connection.getRemoteSocketAddress() + "): " + line);
+                            try {
+                                if (getServer().getScheduler().callSyncMethod(RconPlugin.this, () ->
+                                        !getServer().dispatchCommand(sender, line)
+                                ).get()) {
+                                    output.writeLnWithoutFlush("Command not found");
+                                    output.flush();
+                                }
+                            } catch (Exception e) {
+                                output.writeLnWithoutFlush(e.toString());
                                 output.flush();
                             }
-                        } catch (CommandException e) {
-                            output.write(e.toString());
-                            output.write('\n');
-                            output.flush();
-                        }
-                    });
+                        });
+                    }
                 } finally {
                     connection.close();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 getLogger().log(Level.SEVERE, "Unknown error in connection thread", e);
             }
         }

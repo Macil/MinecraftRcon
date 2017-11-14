@@ -13,10 +13,10 @@ public class NLRequiringBufferedReaderTest {
     public void readLine() throws Exception {
         NLRequiringBufferedReader r = new NLRequiringBufferedReader(new StringReader(
                 "foo\n\nbar x x\nbaz"));
-        assertEquals(r.readLine(), "foo");
-        assertEquals(r.readLine(), "");
-        assertEquals(r.readLine(), "bar x x");
-        assertEquals(r.readLine(), null);
+        assertEquals("foo", r.readLine());
+        assertEquals("", r.readLine());
+        assertEquals("bar x x", r.readLine());
+        assertEquals(null, r.readLine());
     }
 
     @Test
@@ -24,8 +24,9 @@ public class NLRequiringBufferedReaderTest {
         NLRequiringBufferedReader r = new NLRequiringBufferedReader(new StringReader(
                 "foo\n\nbar x x\nbaz"));
         assertEquals(
-                r.lines().collect(Collectors.toList()),
-                Lists.newArrayList("foo", "", "bar x x"));
+                Lists.newArrayList("foo", "", "bar x x"),
+                r.lines().collect(Collectors.toList())
+        );
     }
 
 }

@@ -12,27 +12,23 @@ import java.util.Set;
 
 class RconCommandSender implements CommandSender {
     private final RconPlugin plugin;
-    private final PrintWriter output;
+    private final OffThreadWriter output;
 
-    RconCommandSender(RconPlugin plugin, PrintWriter output) {
+    RconCommandSender(RconPlugin plugin, OffThreadWriter output) {
         this.plugin = plugin;
         this.output = output;
     }
 
     @Override
     public void sendMessage(String message) {
-        output.write(message);
-        output.write('\n');
-        output.flush();
+        output.writeLn(message);
     }
 
     @Override
     public void sendMessage(String[] messages) {
         for (String message : messages) {
-            output.write(message);
-            output.write('\n');
+            output.writeLn(message);
         }
-        output.flush();
     }
 
     @Override
