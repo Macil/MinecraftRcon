@@ -19,17 +19,16 @@ import java.util.logging.Level;
 
 public class RconPlugin extends JavaPlugin {
     private static final int SOCKET_BACKLOG = 20;
-    private static final int THREAD_COUNT = 4;
+    private static final int THREAD_COUNT = 6;
     private static final String EXPECTED_GREETING = "Minecraft-Rcon";
     private ServerSocket socket;
-    //    private ExecutorService threadPool;
+    private static final Executor connectionHandler = Executors.newWorkStealingPool(THREAD_COUNT);
     private static final Executor outputFlusher = Executors.newWorkStealingPool(THREAD_COUNT);
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
-//        threadPool = Executors.newWorkStealingPool(THREAD_COUNT);
         String listenAddress = getConfig().getString("listenAddress");
         int port = getConfig().getInt("port");
 
@@ -47,11 +46,7 @@ public class RconPlugin extends JavaPlugin {
             try {
                 while (true) {
                     Socket connection = socket.accept();
-                    try {
-                        new Thread(new ClientConnectionRunnable(connection)).start();
-                    } catch (Exception e) {
-                        connection.close();
-                    }
+                    connectionHandler.execute(new ClientConnectionRunnable(connection));
                 }
             } catch (SocketException e) {
                 // ignore, happens when socket is closed
