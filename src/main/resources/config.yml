@@ -1,0 +1,5 @@
+# The address to listen on.
+# Set to "all" for all addresses.
+listenAddress: "localhost"
+# The port to listen on.
+port: 25576
