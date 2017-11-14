@@ -7,7 +7,6 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
-import java.io.PrintWriter;
 import java.util.Set;
 
 class RconCommandSender implements CommandSender {
