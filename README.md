@@ -21,3 +21,10 @@ the client may send console commands followed by a newline ("\n"). Any input
 from the client that does not end in a newline will be ignored so that no
 malformed commands are executed if the TCP connection is killed early. While
 the session is open, all of the server's logs are mirrored to the client.
+
+Commands can be sent by using netcat in a terminal like this:
+
+    $ echo -en 'Minecraft-Rcon\nlist\n' | nc localhost 25576
+    [Rcon] rcon(/127.0.0.1:37854): list
+    There are 1/20 players online:
+    DaringMacil
