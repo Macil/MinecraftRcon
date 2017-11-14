@@ -1,6 +1,7 @@
 package tech.macil.minecraft.rcon;
 
 import com.google.common.base.Charsets;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import tech.macil.util.NLRequiringBufferedReader;
@@ -107,7 +108,7 @@ public class RconPlugin extends JavaPlugin {
                                     output.flush();
                                 }
                             } catch (Exception e) {
-                                output.writeLnWithoutFlush(e.toString());
+                                output.writeLnWithoutFlush(ExceptionUtils.getStackTrace(e));
                                 output.flush();
                             }
                         });
