@@ -48,6 +48,8 @@ if (!project.hasProperty("gitCommitHash")) {
 ext.internalVersion = version + ";" + gitCommitHash
 
 processResources {
+    inputs.property("version", project.internalVersion)
+
     from (sourceSets.main.resources.srcDirs) {
         expand 'internalVersion': project.internalVersion
         include 'plugin.yml'
