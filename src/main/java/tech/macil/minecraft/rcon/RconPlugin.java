@@ -2,21 +2,21 @@ package tech.macil.minecraft.rcon;
 
 import com.google.common.base.Charsets;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.bukkit.command.CommandSender;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.*;
+import org.apache.logging.log4j.core.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import tech.macil.util.NLRequiringBufferedReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
+import java.util.logging.*;
 
 public class RconPlugin extends JavaPlugin {
     private static final int SOCKET_BACKLOG = 20;
@@ -91,27 +91,33 @@ public class RconPlugin extends JavaPlugin {
                             getLogger(),
                             outputFlusher
                     )) {
-                        CommandSender sender = new RconCommandSender(RconPlugin.this, output);
+                        Appender appender = new RconAppender(connection, output);
 
-                        String greeting = input.readLine();
-                        if (!EXPECTED_GREETING.equals(greeting)) {
-                            return;
-                        }
+                        try {
+                            ((Logger) LogManager.getRootLogger()).addAppender(appender);
 
-                        input.lines().forEach(line -> {
-                            getLogger().log(Level.INFO, "rcon(" + connection.getRemoteSocketAddress() + "): " + line);
-                            try {
-                                if (getServer().getScheduler().callSyncMethod(RconPlugin.this, () ->
-                                        !getServer().dispatchCommand(sender, line)
-                                ).get()) {
-                                    output.writeLnWithoutFlush("Command not found");
+                            String greeting = input.readLine();
+                            if (!EXPECTED_GREETING.equals(greeting)) {
+                                return;
+                            }
+
+                            input.lines().forEach(line -> {
+                                getLogger().log(Level.INFO, "rcon(" + connection.getRemoteSocketAddress() + "): " + line);
+                                try {
+                                    if (getServer().getScheduler().callSyncMethod(RconPlugin.this, () ->
+                                            !getServer().dispatchCommand(Bukkit.getConsoleSender(), line)
+                                    ).get()) {
+                                        output.writeLnWithoutFlush("Command not found");
+                                        output.flush();
+                                    }
+                                } catch (Exception e) {
+                                    output.writeLnWithoutFlush(ExceptionUtils.getStackTrace(e));
                                     output.flush();
                                 }
-                            } catch (Exception e) {
-                                output.writeLnWithoutFlush(ExceptionUtils.getStackTrace(e));
-                                output.flush();
-                            }
-                        });
+                            });
+                        } finally {
+                            ((Logger) LogManager.getRootLogger()).removeAppender(appender);
+                        }
                     }
                 } finally {
                     connection.close();
@@ -120,5 +126,6 @@ public class RconPlugin extends JavaPlugin {
                 getLogger().log(Level.SEVERE, "Unknown error in connection thread", e);
             }
         }
+
     }
 }
