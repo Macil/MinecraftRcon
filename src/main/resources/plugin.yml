@@ -1,0 +1,3 @@
+name: Rcon
+main: tech.macil.minecraft.rcon.RconPlugin
+version: "${internalVersion}"
