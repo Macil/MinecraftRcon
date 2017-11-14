@@ -1,5 +1,7 @@
 # Rcon
 
+[![Circle CI](https://circleci.com/gh/AgentME/bukkit-rcon.svg?style=shield)](https://circleci.com/gh/AgentME/bukkit-rcon)
+
 This is a Bukkit plugin for Minecraft servers that allows console commands to
 be read from a TCP port.
 
