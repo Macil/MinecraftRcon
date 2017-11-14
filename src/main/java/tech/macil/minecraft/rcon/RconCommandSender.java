@@ -7,26 +7,32 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 
+import java.io.PrintWriter;
 import java.util.Set;
-import java.util.logging.Level;
 
 class RconCommandSender implements CommandSender {
     private final RconPlugin plugin;
+    private final PrintWriter output;
 
-    RconCommandSender(RconPlugin plugin) {
+    RconCommandSender(RconPlugin plugin, PrintWriter output) {
         this.plugin = plugin;
+        this.output = output;
     }
 
     @Override
     public void sendMessage(String message) {
-        plugin.getLogger().log(Level.INFO, "Response: " + message);
+        output.write(message);
+        output.write('\n');
+        output.flush();
     }
 
     @Override
     public void sendMessage(String[] messages) {
         for (String message : messages) {
-            sendMessage(message);
+            output.write(message);
+            output.write('\n');
         }
+        output.flush();
     }
 
     @Override
@@ -36,7 +42,7 @@ class RconCommandSender implements CommandSender {
 
     @Override
     public String getName() {
-        return "$RconPlugin";
+        return "$RconConnection";
     }
 
     @Override
