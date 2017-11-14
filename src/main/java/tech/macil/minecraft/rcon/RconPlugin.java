@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.*;
@@ -112,6 +113,8 @@ public class RconPlugin extends JavaPlugin {
                                     ).get()) {
                                         output.writeLnWithoutFlush("Command not found");
                                         output.flush();
+                                    } else {
+                                        waitForLogsToFlush();
                                     }
                                 } catch (Exception e) {
                                     output.writeLnWithoutFlush(ExceptionUtils.getStackTrace(e));
@@ -130,5 +133,22 @@ public class RconPlugin extends JavaPlugin {
             }
         }
 
+    }
+
+    private void waitForLogsToFlush() {
+        // It seems like the output of some commands is only delivered to our appender
+        // asynchronously. I couldn't find a direct way to wait on whatever loggers involved
+        // to flush, but I found that just waiting on the next game tick seems to (maybe just
+        // mostly) solve the problem in practice.
+
+        // There's a similar issue that some plugins' commands (especially any plugins using a
+        // database) don't output any results until some unknown time later. This doesn't help
+        // much for those and I don't really intend for that case to get fixed. It's up to the
+        // client to hold the connection open longer in those cases.
+        try {
+            getServer().getScheduler().callSyncMethod(RconPlugin.this, () -> null).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
