@@ -85,9 +85,17 @@ public class RconPlugin extends JavaPlugin {
                     // execute half of a command.
                     BufferedReader input = new NLRequiringBufferedReader(
                             new InputStreamReader(connection.getInputStream(), Charsets.UTF_8));
+                    PrintWriter outputPrintWriter = new PrintWriter(connection.getOutputStream(), false);
+
+                    String greeting = input.readLine();
+                    if (!EXPECTED_GREETING.equals(greeting)) {
+                        outputPrintWriter.write("Bad header\n");
+                        outputPrintWriter.flush();
+                        return;
+                    }
 
                     try (OffThreadWriter output = new OffThreadWriter(
-                            new PrintWriter(connection.getOutputStream(), false),
+                            outputPrintWriter,
                             getLogger(),
                             outputFlusher
                     )) {
@@ -95,11 +103,6 @@ public class RconPlugin extends JavaPlugin {
 
                         try {
                             ((Logger) LogManager.getRootLogger()).addAppender(appender);
-
-                            String greeting = input.readLine();
-                            if (!EXPECTED_GREETING.equals(greeting)) {
-                                return;
-                            }
 
                             input.lines().forEach(line -> {
                                 getLogger().log(Level.INFO, "rcon(" + connection.getRemoteSocketAddress() + "): " + line);
