@@ -28,3 +28,10 @@ Commands can be sent by using netcat in a terminal like this:
     [Rcon] rcon(/127.0.0.1:37854): list
     There are 1/20 players online:
     DaringMacil
+
+## Installing
+
+Download the latest Rcon jar file from the
+[Project's Releases page](https://github.com/AgentME/bukkit-rcon/releases).
+Place the jar file in the plugins/ directory. After the first run, the file
+plugins/Rcon/config.yml file will be generated with default values.
