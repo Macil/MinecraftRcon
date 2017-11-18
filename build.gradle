@@ -60,4 +60,5 @@ processResources {
     }
 }
 
+// Bukkit dependency is always a snapshot version
 checkSnapshotDependencies.enabled = false
