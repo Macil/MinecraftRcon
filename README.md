@@ -32,6 +32,6 @@ Commands can be sent by using netcat in a terminal like this:
 ## Installing
 
 Download the latest Rcon jar file from the
-[Project's Releases page](https://github.com/AgentME/bukkit-rcon/releases).
+[project's Releases page](https://github.com/AgentME/bukkit-rcon/releases).
 Place the jar file in the plugins/ directory. After the first run, the file
 plugins/Rcon/config.yml file will be generated with default values.
