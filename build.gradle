@@ -46,6 +46,7 @@ if (!project.hasProperty("gitCommitHash")) {
 }
 
 ext.internalVersion = version + ";" + gitCommitHash
+jar.archiveName = rootProject.name + '.jar'
 
 processResources {
     inputs.property("version", project.internalVersion)
