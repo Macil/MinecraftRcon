@@ -1,4 +1,4 @@
-package tech.macil.util;
+package tech.macil.minecraft.rcon.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

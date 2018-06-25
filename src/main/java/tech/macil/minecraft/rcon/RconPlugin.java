@@ -7,7 +7,7 @@ import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import tech.macil.util.NLRequiringBufferedReader;
+import tech.macil.minecraft.rcon.util.NLRequiringBufferedReader;
 
 import java.io.*;
 import java.net.InetAddress;

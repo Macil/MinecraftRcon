@@ -1,4 +1,4 @@
-package tech.macil.util;
+package tech.macil.minecraft.rcon.util;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
