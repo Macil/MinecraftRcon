@@ -1,12 +1,12 @@
 package tech.macil.minecraft.rcon.util
 
 import com.google.common.collect.Lists
-import org.junit.Test
 
 import java.io.StringReader
 import java.util.stream.Collectors
 
-import org.junit.Assert.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class NLRequiringBufferedReaderTest {
     @Test

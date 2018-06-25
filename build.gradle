@@ -28,12 +28,20 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    implementation('org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT') {
+        exclude group: 'junit', module: 'junit'
+    }
     implementation 'org.bstats:bstats-bukkit:1.2'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
-    testCompile 'junit:junit:4.12'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile) {

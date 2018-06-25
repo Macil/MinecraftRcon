@@ -1,7 +1,5 @@
 package tech.macil.minecraft.rcon
 
-import org.junit.Test
-
 import java.io.CharArrayWriter
 import java.io.PrintWriter
 import java.util.ArrayList
@@ -10,7 +8,8 @@ import java.util.concurrent.Executor
 import java.util.logging.LogRecord
 import java.util.logging.Logger
 
-import org.junit.Assert.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class OffThreadWriterTest {
     @Test
