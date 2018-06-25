@@ -13,10 +13,15 @@ repositories {
 }
 
 dependencies {
-    compile 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
-    compile 'org.apache.logging.log4j:log4j-core:2.9.1'
-    compile 'org.apache.logging.log4j:log4j-api:2.9.1'
+    implementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
     testCompile 'junit:junit:4.12'
+}
+
+tasks.withType(JavaCompile) {
+    // Disable log4j annotation processors
+    options.compilerArgs << '-proc:none'
 }
 
 buildscript {
@@ -35,7 +40,7 @@ buildscript {
 
 if (!project.hasProperty("gitCommitHash")) {
     try {
-        def repo = Grgit.open(dir: '.')
+        def repo = Grgit.open()
         ext.gitCommitHash = repo.head().abbreviatedId
     } catch (Exception e) {
         println "Error getting commit hash: " + e.getMessage()
@@ -46,7 +51,12 @@ if (!project.hasProperty("gitCommitHash")) {
 }
 
 ext.internalVersion = version + ";" + gitCommitHash
-jar.archiveName = rootProject.name + '.jar'
+
+jar {
+    // don't include version and classifier in jar name
+    classifier = null
+    version = null
+}
 
 processResources {
     inputs.property("version", project.internalVersion)
