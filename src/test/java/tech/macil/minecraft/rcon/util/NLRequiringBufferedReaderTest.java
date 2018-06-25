@@ -28,5 +28,4 @@ public class NLRequiringBufferedReaderTest {
                 r.lines().collect(Collectors.toList())
         );
     }
-
 }
