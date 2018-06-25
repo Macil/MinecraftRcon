@@ -26,14 +26,13 @@ tasks.withType(JavaCompile) {
 
 buildscript {
     repositories {
+        jcenter()
         mavenCentral()
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
-        classpath 'org.ajoberstar:gradle-git:1.6.0'
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
         classpath 'net.researchgate:gradle-release:2.6.0'
     }
 }
