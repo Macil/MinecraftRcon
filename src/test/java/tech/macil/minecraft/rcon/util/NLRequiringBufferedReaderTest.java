@@ -16,7 +16,7 @@ public class NLRequiringBufferedReaderTest {
         assertEquals("foo", r.readLine());
         assertEquals("", r.readLine());
         assertEquals("bar x x", r.readLine());
-        assertEquals(null, r.readLine());
+        assertNull(r.readLine());
     }
 
     @Test
