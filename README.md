@@ -35,3 +35,7 @@ Download the latest Rcon jar file from the
 [project's Releases page](https://github.com/AgentME/bukkit-rcon/releases).
 Place the jar file in the plugins/ directory. After the first run, the file
 plugins/Rcon/config.yml file will be generated with default values.
+
+This plugin records some usage metrics to
+https://bstats.org/plugin/bukkit/NonEuclid. You can opt out of this by
+placing `enabled: false` in `plugins/bStats/config.yml`.

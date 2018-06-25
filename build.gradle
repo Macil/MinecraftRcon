@@ -2,6 +2,7 @@ import org.ajoberstar.grgit.Grgit
 
 group 'tech.macil.minecraft.rcon'
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'net.researchgate.release'
 
@@ -10,10 +11,12 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url "http://repo.bstats.org/content/repositories/releases/" }
 }
 
 dependencies {
     implementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    implementation 'org.bstats:bstats-bukkit:1.2'
     implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
     testCompile 'junit:junit:4.12'
@@ -32,6 +35,7 @@ buildscript {
     }
 
     dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
         classpath 'org.ajoberstar:gradle-git:1.7.2'
         classpath 'net.researchgate:gradle-release:2.6.0'
     }
@@ -51,21 +55,30 @@ if (!project.hasProperty("gitCommitHash")) {
 
 ext.internalVersion = version + ";" + gitCommitHash
 
-jar {
+shadowJar {
+    relocate 'org.bstats', "${project.group}.shadow.org.bstats"
+
+    dependencies {
+        include(dependency('org.bstats:bstats-bukkit'))
+    }
+
     // don't include version and classifier in jar name
     classifier = null
     version = null
 }
 
+jar.enabled = false
+assemble.dependsOn shadowJar
+
 processResources {
     inputs.property("version", project.internalVersion)
 
-    from (sourceSets.main.resources.srcDirs) {
+    from(sourceSets.main.resources.srcDirs) {
         expand 'internalVersion': project.internalVersion
         include 'plugin.yml'
     }
 
-    from (sourceSets.main.resources.srcDirs) {
+    from(sourceSets.main.resources.srcDirs) {
         exclude 'plugin.yml'
     }
 }

@@ -5,6 +5,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.Logger;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import tech.macil.minecraft.rcon.util.NLRequiringBufferedReader;
@@ -30,6 +31,8 @@ public class RconPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+
+        new Metrics(this);
 
         String listenAddress = getConfig().getString("listenAddress");
         int port = getConfig().getInt("port");
