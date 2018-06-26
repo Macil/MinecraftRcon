@@ -75,7 +75,11 @@ if (!project.hasProperty("gitCommitHash")) {
 ext.internalVersion = version + ";" + gitCommitHash
 
 shadowJar {
-    relocate 'kotlin', "${project.group}.shadow.kotlin"
+    def kotlinVersion = buildscript.configurations["classpath"]
+            .resolvedConfiguration.firstLevelModuleDependencies
+            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }?.moduleVersion
+
+    relocate 'kotlin', "kotlin.shadow.${kotlinVersion.replace('.', '_')}"
     relocate 'org.bstats', "${project.group}.shadow.org.bstats"
     relocate 'fi.iki.elonen', "${project.group}.shadow.fi.iki.elonen"
 
