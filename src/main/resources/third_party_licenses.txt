@@ -1,4 +1,4 @@
-Rcon updates and source code are available at https://github.com/AgentME/bukkit-rcon.
+Rcon updates and source code are available at https://github.com/AgentME/MinecraftRcon.
 
 Rcon is built with third party software that has been made available under various licenses listed below.
 
