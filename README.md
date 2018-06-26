@@ -1,6 +1,6 @@
 # Rcon
 
-[![Circle CI](https://circleci.com/gh/AgentME/bukkit-rcon.svg?style=shield)](https://circleci.com/gh/AgentME/bukkit-rcon)
+[![Circle CI](https://circleci.com/gh/AgentME/MinecraftRcon.svg?style=shield)](https://circleci.com/gh/AgentME/MinecraftRcon)
 
 This is a Bukkit plugin for Minecraft servers that allows console commands to
 be read from a TCP port.
@@ -32,7 +32,7 @@ Commands can be sent by using netcat in a terminal like this:
 ## Installing
 
 Download the latest Rcon jar file from the
-[project's Releases page](https://github.com/AgentME/bukkit-rcon/releases).
+[project's Releases page](https://github.com/AgentME/MinecraftRcon/releases).
 Place the jar file in the plugins/ directory. After the first run, the file
 plugins/Rcon/config.yml file will be generated with default values.
 
