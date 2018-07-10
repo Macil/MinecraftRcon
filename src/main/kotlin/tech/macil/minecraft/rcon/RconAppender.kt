@@ -1,42 +1,38 @@
 package tech.macil.minecraft.rcon
 
 import org.apache.logging.log4j.core.*
+import java.io.PrintWriter
 
 import java.io.Serializable
 import java.net.Socket
 import java.util.UUID
 
 class RconAppender(
-        private val connection: Socket,
-        private val output: OffThreadWriter
+        private val output: PrintWriter
 ) : Appender {
     private val uuid = UUID.randomUUID()
 
     override fun append(event: LogEvent) {
-        output.writeLn(event.message.formattedMessage)
+        try {
+            output.println(event.message.formattedMessage)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun getName(): String {
         return "\$RconSession:" + uuid.toString()
     }
 
-    override fun getLayout(): Layout<out Serializable>? {
-        return null
-    }
+    override fun getLayout(): Layout<out Serializable>? = null
 
-    override fun ignoreExceptions(): Boolean {
-        return false
-    }
+    override fun ignoreExceptions(): Boolean = false
 
-    override fun getHandler(): ErrorHandler? {
-        return null
-    }
+    override fun getHandler(): ErrorHandler? = null
 
     override fun setHandler(handler: ErrorHandler?) {}
 
-    override fun getState(): LifeCycle.State? {
-        return null
-    }
+    override fun getState(): LifeCycle.State? = null
 
     override fun initialize() {}
 
@@ -44,11 +40,7 @@ class RconAppender(
 
     override fun stop() {}
 
-    override fun isStarted(): Boolean {
-        return true
-    }
+    override fun isStarted(): Boolean = true
 
-    override fun isStopped(): Boolean {
-        return connection.isClosed
-    }
+    override fun isStopped(): Boolean = false
 }
