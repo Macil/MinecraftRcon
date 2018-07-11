@@ -29,6 +29,28 @@ Commands can be sent by using curl in a terminal like this:
     There are 1/20 players online:
     DaringMacil
 
+The Rcon plugin also responds to GET requests to the following paths:
+
+* /info: This returns a JSON object containing information about the server.
+
+```json
+{
+  "name": "Unknown Server",
+  "version": "git-Spigot-642f6d2-fbe3046 (MC: 1.12.2)",
+  "motd": "A Minecraft Server",
+  "currentPlayerCount": 1,
+  "maxPlayerCount": 20,
+  "players": [
+    {
+      "name": "DaringMacil"
+    }
+  ]
+}
+```
+
+* /healthcheck: This endpoint responds with a 200 status if the Rcon plugin
+is working.
+
 ## Installing
 
 Download the latest Rcon jar file from the
