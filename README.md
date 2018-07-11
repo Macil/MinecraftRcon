@@ -19,8 +19,9 @@ This plugin does not implement the native rcon protocol. It expects a client
 to make a POST request to the path "/command", and to include a POST body
 parameter named "command" containing the Minecraft console command to run.
 
-For a few moments after the command is executed, all of the server's logs are
-mirrored to the client so that the client gets the response.
+After the command is executed, all of the server's logs for a game tick are
+mirrored to the response so that the client gets the output from the command.
+Other output from the logs may be captured in this too.
 
 Commands can be sent by using curl in a terminal like this:
 
