@@ -18,6 +18,13 @@ is configurable in the plugin's `config.yml`.)
 This plugin does not implement the native rcon protocol. It expects a client
 to make a POST request to the path "/command", and to include a POST body
 parameter named "command" containing the Minecraft console command to run.
+When the Rcon plugin receives a POST request, the special header
+"X-Anti-CSRF: 1" must be included. (This is a protection against CSRF attacks:
+if you run this plugin on your computer set to only listen localhost, and you
+browse the internet on your computer, then a website you visit can tell your
+browser to make a POST request to any address including to the Rcon plugin,
+but the website can't tell your browser to include arbitrary headers, so the
+website won't be able to trigger Rcon commands.)
 
 After the command is executed, all of the server's logs for a game tick are
 mirrored to the response so that the client gets the output from the command.
@@ -25,7 +32,7 @@ Other output from the logs may be captured in this too.
 
 Commands can be sent by using curl in a terminal like this:
 
-    $ curl http://localhost:25576/command -d 'command=list'
+    $ curl http://localhost:25576/command -H 'X-Anti-CSRF: 1' --data-urlencode 'command=list'
     There are 1/20 players online:
     DaringMacil
 

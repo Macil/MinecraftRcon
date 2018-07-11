@@ -45,6 +45,10 @@ class WebServer(
                 }
             }
             Method.POST -> {
+                if (session.headers["x-anti-csrf"] != "1") {
+                    throw ResponseException(Response.Status.FORBIDDEN, "X-Anti-CSRF header is required for POST requests.\n")
+                }
+
                 session.parseBody(mutableMapOf<String, String>())
 
                 if (uri == "/command") {
