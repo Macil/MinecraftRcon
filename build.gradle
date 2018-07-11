@@ -5,10 +5,12 @@ buildscript {
         jcenter()
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
         classpath 'org.ajoberstar:gradle-git:1.7.2'
+        classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:a524ada411315aa9b2a58eedcaaa834015e56721'
     }
 }
 
@@ -17,6 +19,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
     id 'net.researchgate.release' version '2.6.0'
 }
+
+apply plugin: 'de.johni0702.reproducible-builds'
 
 group 'tech.macil.minecraft.rcon'
 
