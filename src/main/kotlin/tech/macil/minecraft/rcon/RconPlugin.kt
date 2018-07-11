@@ -5,9 +5,13 @@ import org.apache.logging.log4j.core.Logger
 import org.bstats.bukkit.Metrics
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import tech.macil.minecraft.rcon.util.ByteArrayQueue
+import tech.macil.minecraft.rcon.util.StandardDataStream
 
 import java.io.*
 import java.util.logging.*
+import javax.servlet.AsyncContext
+import javax.servlet.ServletOutputStream
 import kotlin.concurrent.thread
 
 class RconPlugin : JavaPlugin() {
@@ -36,30 +40,29 @@ class RconPlugin : JavaPlugin() {
         }
     }
 
-    private fun handleCommand(command: String, output: OutputStream, remoteIp: String) {
-        logger.log(Level.INFO, "rcon($remoteIp): $command")
+    private fun handleCommand(command: String, output: ServletOutputStream, async: AsyncContext) {
+        logger.log(Level.INFO, "rcon(${async.request.remoteAddr}): $command")
+
+        val (queuedInput, queuedOutput) = ByteArrayQueue.makePair()
+
+        output.setWriteListener(StandardDataStream(queuedInput, async, output))
 
         thread {
-            try {
-                PrintWriter(output, false).use { outputPrintWriter ->
-                    val appender = RconAppender(outputPrintWriter)
+            PrintWriter(queuedOutput).use { queuedPrintWriter ->
+                val appender = RconAppender(queuedPrintWriter)
+                try {
+                    (LogManager.getRootLogger() as Logger).addAppender(appender)
                     try {
-                        (LogManager.getRootLogger() as Logger).addAppender(appender)
-
-                        try {
-                            server.scheduler.callSyncMethod(this) {
-                                server.dispatchCommand(Bukkit.getConsoleSender(), command)
-                            }.get()
-                            waitForLogsToFlush()
-                        } catch (e: Exception) {
-                            e.printStackTrace(outputPrintWriter)
-                        }
-                    } finally {
-                        (LogManager.getRootLogger() as Logger).removeAppender(appender)
+                        server.scheduler.callSyncMethod(this) {
+                            server.dispatchCommand(Bukkit.getConsoleSender(), command)
+                        }.get()
+                        waitForLogsToFlush()
+                    } catch (e: Exception) {
+                        e.printStackTrace(queuedPrintWriter)
                     }
+                } finally {
+                    (LogManager.getRootLogger() as Logger).removeAppender(appender)
                 }
-            } catch (e: Exception) {
-                logger.log(Level.SEVERE, "Unknown error in connection thread", e)
             }
         }
     }
@@ -72,8 +75,7 @@ class RconPlugin : JavaPlugin() {
 
         // There's a similar issue that some plugins' commands (especially any plugins using a
         // database) don't output any results until some unknown time later. This doesn't help
-        // much for those and I don't really intend for that case to get fixed. It's up to the
-        // client to hold the connection open longer in those cases.
+        // much for those, and I'm not sure if I intend to address that.
         server.scheduler.callSyncMethod(this) { null }.get()
     }
 }
