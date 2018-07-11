@@ -33,7 +33,10 @@ dependencies {
     }
     implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'org.bstats:bstats-bukkit:1.2'
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+
+    implementation 'org.eclipse.jetty:jetty-server:9.4.11.v20180605'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.11.v20180605'
+
     implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
 
@@ -82,13 +85,21 @@ shadowJar {
 
     relocate 'kotlin', "org.repackage.v${kotlinVersion.replace('.', '_')}.kotlin"
     relocate 'org.bstats', "${project.group}.repackaged.org.bstats"
-    relocate 'fi.iki.elonen', "${project.group}.repackaged.fi.iki.elonen"
+
+    relocate 'org.eclipse', "${project.group}.repackaged.org.eclipse"
+    relocate 'javax.servlet', "${project.group}.repackaged.javax.servlet"
 
     dependencies {
         include(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
         include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
         include(dependency('org.bstats:bstats-bukkit'))
-        include(dependency('org.nanohttpd:nanohttpd'))
+
+        include(dependency('org.eclipse.jetty:jetty-server'))
+        include(dependency('org.eclipse.jetty:jetty-servlet'))
+        include(dependency('org.eclipse.jetty:jetty-http'))
+        include(dependency('org.eclipse.jetty:jetty-io'))
+        include(dependency('org.eclipse.jetty:jetty-util'))
+        include(dependency('javax.servlet:javax.servlet-api'))
     }
 
     // don't include version and classifier in jar name
