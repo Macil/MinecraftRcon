@@ -22,7 +22,7 @@ class RconPlugin : JavaPlugin() {
         if (listenAddress == "all") listenAddress = null
         val port = config.getInt("port")
 
-        val webServer = WebServer(listenAddress, port) { command, consumer, remoteIp -> handleCommand(command, consumer, remoteIp) }
+        val webServer = WebServer(listenAddress, port, this, this::handleCommand)
         this.webServer = webServer
 
         webServer.start()
