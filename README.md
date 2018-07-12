@@ -36,6 +36,9 @@ Commands can be sent by using curl in a terminal like this:
     There are 1/20 players online:
     DaringMacil
 
+Tip: You should add the `--fail` flag to make curl exit with a nonzero exit
+code on unsuccessful server responses if you're using curl from a script.
+
 The Rcon plugin also responds to GET requests to the following paths:
 
 * /info: This returns a JSON object containing information about the server.
