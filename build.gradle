@@ -1,12 +1,28 @@
 import org.ajoberstar.grgit.Grgit
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url 'https://jitpack.io' }
+    }
+
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
+        classpath 'com.github.johni0702:gradle-reproducible-builds-plugin:a524ada411315aa9b2a58eedcaaa834015e56721'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+    id 'net.researchgate.release' version '2.6.0'
+}
+
+apply plugin: 'de.johni0702.reproducible-builds'
+
 group 'tech.macil.minecraft.rcon'
-
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'java'
-apply plugin: 'net.researchgate.release'
-
-sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -15,11 +31,27 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation('org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT') {
+        exclude group: 'junit', module: 'junit'
+    }
+    implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'org.bstats:bstats-bukkit:1.2'
+
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+    implementation 'org.eclipse.jetty:jetty-server:9.4.11.v20180605'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.11.v20180605'
+
     implementation 'org.apache.logging.log4j:log4j-core:2.9.1'
     implementation 'org.apache.logging.log4j:log4j-api:2.9.1'
-    testCompile 'junit:junit:4.12'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile) {
@@ -27,17 +59,14 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << '-proc:none'
 }
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
-
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-        classpath 'org.ajoberstar:gradle-git:1.7.2'
-        classpath 'net.researchgate:gradle-release:2.6.0'
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
@@ -56,10 +85,32 @@ if (!project.hasProperty("gitCommitHash")) {
 ext.internalVersion = version + ";" + gitCommitHash
 
 shadowJar {
-    relocate 'org.bstats', "${project.group}.shadow.org.bstats"
+    def kotlinVersion = buildscript.configurations["classpath"]
+            .resolvedConfiguration.firstLevelModuleDependencies
+            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }?.moduleVersion
+
+    relocate 'kotlin', "org.repackage.v${kotlinVersion.replace('.', '_')}.kotlin"
+    relocate 'org.bstats', "${project.group}.repackaged.org.bstats"
+
+    relocate 'org.mindrot', "${project.group}.repackaged.org.mindrot"
+
+    relocate 'org.eclipse', "${project.group}.repackaged.org.eclipse"
+    relocate 'javax.servlet', "${project.group}.repackaged.javax.servlet"
 
     dependencies {
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
         include(dependency('org.bstats:bstats-bukkit'))
+
+        include(dependency('org.mindrot:jbcrypt'))
+
+        include(dependency('org.eclipse.jetty:jetty-server'))
+        include(dependency('org.eclipse.jetty:jetty-servlet'))
+        include(dependency('org.eclipse.jetty:jetty-http'))
+        include(dependency('org.eclipse.jetty:jetty-io'))
+        include(dependency('org.eclipse.jetty:jetty-security'))
+        include(dependency('org.eclipse.jetty:jetty-util'))
+        include(dependency('javax.servlet:javax.servlet-api'))
     }
 
     // don't include version and classifier in jar name
