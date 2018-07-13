@@ -38,6 +38,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'org.bstats:bstats-bukkit:1.2'
 
+    implementation 'org.mindrot:jbcrypt:0.4'
+
     implementation 'org.eclipse.jetty:jetty-server:9.4.11.v20180605'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.11.v20180605'
 
@@ -90,6 +92,8 @@ shadowJar {
     relocate 'kotlin', "org.repackage.v${kotlinVersion.replace('.', '_')}.kotlin"
     relocate 'org.bstats', "${project.group}.repackaged.org.bstats"
 
+    relocate 'org.mindrot', "${project.group}.repackaged.org.mindrot"
+
     relocate 'org.eclipse', "${project.group}.repackaged.org.eclipse"
     relocate 'javax.servlet', "${project.group}.repackaged.javax.servlet"
 
@@ -97,6 +101,8 @@ shadowJar {
         include(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
         include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
         include(dependency('org.bstats:bstats-bukkit'))
+
+        include(dependency('org.mindrot:jbcrypt'))
 
         include(dependency('org.eclipse.jetty:jetty-server'))
         include(dependency('org.eclipse.jetty:jetty-servlet'))
