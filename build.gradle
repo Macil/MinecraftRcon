@@ -102,6 +102,7 @@ shadowJar {
         include(dependency('org.eclipse.jetty:jetty-servlet'))
         include(dependency('org.eclipse.jetty:jetty-http'))
         include(dependency('org.eclipse.jetty:jetty-io'))
+        include(dependency('org.eclipse.jetty:jetty-security'))
         include(dependency('org.eclipse.jetty:jetty-util'))
         include(dependency('javax.servlet:javax.servlet-api'))
     }

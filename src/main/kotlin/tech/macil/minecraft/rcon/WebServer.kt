@@ -3,7 +3,9 @@ package tech.macil.minecraft.rcon
 import com.google.gson.GsonBuilder
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
+import org.eclipse.jetty.server.handler.HandlerList
 import org.eclipse.jetty.servlet.FilterHolder
+import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.thread.QueuedThreadPool
@@ -33,15 +35,16 @@ class WebServer(
         connector.port = port
         server.addConnector(connector)
 
-        val servletHandler = ServletHandler()
-        server.handler = servletHandler
+        val servletContextHandler = ServletContextHandler()
+        servletContextHandler.contextPath = "/"
+        server.handler = HandlerList(servletContextHandler)
 
-        servletHandler.addFilterWithMapping(FilterHolder(SaneEncodingFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
-        servletHandler.addFilterWithMapping(FilterHolder(AntiCsrfFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
+        servletContextHandler.addFilter(FilterHolder(SaneEncodingFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
+        servletContextHandler.addFilter(FilterHolder(AntiCsrfFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
 
-        servletHandler.addServletWithMapping(ServletHolder(HealthCheckServlet()), "/healthcheck")
-        servletHandler.addServletWithMapping(ServletHolder(InfoServlet(plugin, gson)), "/info")
-        servletHandler.addServletWithMapping(ServletHolder(CommandServlet(handler)), "/command")
+        servletContextHandler.addServlet(ServletHolder(HealthCheckServlet()), "/healthcheck")
+        servletContextHandler.addServlet(ServletHolder(InfoServlet(plugin, gson)), "/info")
+        servletContextHandler.addServlet(ServletHolder(CommandServlet(handler)), "/command")
     }
 
     fun start() {
