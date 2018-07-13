@@ -17,7 +17,7 @@ class AntiCsrfFilter : Filter {
 
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         request as HttpServletRequest
-        if (request.method in protectMethods && request.getHeader("X-Anti-Csrf") != "1") {
+        if (request.method in protectMethods && request.getHeader("X-Anti-CSRF") != "1") {
             response as HttpServletResponse
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "X-Anti-CSRF header is required for mutative requests.")
             return

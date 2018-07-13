@@ -17,6 +17,7 @@ class WebServer(
         hostName: String?,
         port: Int,
         plugin: RconPlugin,
+        authChecker: AuthChecker?,
         handler: CommandServletHandler
 ) {
     companion object {
@@ -40,6 +41,9 @@ class WebServer(
         server.handler = HandlerList(servletContextHandler)
 
         servletContextHandler.addFilter(FilterHolder(SaneEncodingFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
+        if (authChecker != null) {
+            servletContextHandler.addFilter(FilterHolder(AuthFilter(authChecker)), "/*", EnumSet.of(DispatcherType.REQUEST))
+        }
         servletContextHandler.addFilter(FilterHolder(AntiCsrfFilter()), "/*", EnumSet.of(DispatcherType.REQUEST))
 
         servletContextHandler.addServlet(ServletHolder(HealthCheckServlet()), "/healthcheck")

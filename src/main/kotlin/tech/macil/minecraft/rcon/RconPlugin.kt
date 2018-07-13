@@ -26,7 +26,15 @@ class RconPlugin : JavaPlugin() {
         if (listenAddress == "all") listenAddress = null
         val port = config.getInt("port")
 
-        val webServer = WebServer(listenAddress, port, this, this::handleCommand)
+        val htpasswdFile = File(dataFolder, "htpasswd")
+        val authChecker: AuthChecker? = if (htpasswdFile.exists()) {
+            logger.log(Level.INFO, "Found htpasswd file, loading it.")
+            AuthChecker(htpasswdFile)
+        } else {
+            null
+        }
+
+        val webServer = WebServer(listenAddress, port, this, authChecker, this::handleCommand)
         this.webServer = webServer
 
         webServer.start()
