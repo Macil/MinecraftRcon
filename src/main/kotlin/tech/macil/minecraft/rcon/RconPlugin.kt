@@ -47,7 +47,10 @@ class RconPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
+        // Signal to any current requests that the plugin is shutting down.
         disablingCf.complete(null)
+
+        // Wait on any current requests to finish before killing the webserver.
         runningRequestsCounter.await(Duration.ofSeconds(10).toMillis())
 
         val webServer = this.webServer
@@ -86,7 +89,12 @@ class RconPlugin : JavaPlugin() {
                             server.dispatchCommand(Bukkit.getConsoleSender(), command)
                             dispatchCf.complete(null)
                         }
+                        // If the command causes this plugin to unload, then dispatchCommand()
+                        // will call into onDisable() which will call webServer.stop() which
+                        // will wait on this thread to end, so we need to bail on waiting on
+                        // the dispatchCf future if onDisable() is called.
                         CompletableFuture.anyOf(dispatchCf, disablingCf).get()
+
                         waitForLogsToFlush()
                     } catch (e: Exception) {
                         e.printStackTrace(queuedPrintWriter)
