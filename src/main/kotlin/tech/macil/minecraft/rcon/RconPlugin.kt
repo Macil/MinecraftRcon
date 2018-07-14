@@ -5,15 +5,21 @@ import org.apache.logging.log4j.core.Logger
 import org.bstats.bukkit.Metrics
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
+import tech.macil.minecraft.rcon.util.BlockerCounter
 import tech.macil.minecraft.rcon.util.ByteArrayQueue
 
 import java.io.*
+import java.time.Duration
+import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.logging.*
 import javax.servlet.ServletOutputStream
 import kotlin.concurrent.thread
 
 class RconPlugin : JavaPlugin() {
     private var webServer: WebServer? = null
+    private val disablingCf = CompletableFuture<Unit>()
+    private val runningRequestsCounter = BlockerCounter()
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -39,6 +45,9 @@ class RconPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
+        disablingCf.complete(null)
+        runningRequestsCounter.await(Duration.ofSeconds(10).toMillis())
+
         val webServer = this.webServer
         if (webServer != null) {
             this.webServer = null
@@ -47,43 +56,50 @@ class RconPlugin : JavaPlugin() {
     }
 
     private fun handleCommand(command: String, output: ServletOutputStream, remoteAddr: String) {
-        logger.log(Level.INFO, "rcon($remoteAddr): $command")
+        runningRequestsCounter.acquire().use {
+            logger.log(Level.INFO, "rcon($remoteAddr): $command")
 
-        val (queuedInput, queuedOutput) = ByteArrayQueue.makePair()
+            val (queuedInput, queuedOutput) = ByteArrayQueue.makePair()
 
-        val writerThread = thread {
-            output.use {
-                queuedInput.use {
-                    val buffer = ByteArray(4096)
-                    while (true) {
-                        val len = queuedInput.read(buffer)
-                        if (len < 0) break
-                        output.write(buffer, 0, len)
+            val writerThread = thread {
+                output.use {
+                    queuedInput.use {
+                        val buffer = ByteArray(4096)
+                        while (true) {
+                            val len = queuedInput.read(buffer)
+                            if (len < 0) break
+                            output.write(buffer, 0, len)
+                        }
                     }
                 }
             }
-        }
 
-        PrintWriter(queuedOutput).use { queuedPrintWriter ->
-            val appender = RconAppender(queuedPrintWriter)
-            try {
-                (LogManager.getRootLogger() as Logger).addAppender(appender)
+            PrintWriter(queuedOutput).use { queuedPrintWriter ->
+                val appender = RconAppender(queuedPrintWriter)
                 try {
-                    server.scheduler.callSyncMethod(this) {
-                        server.dispatchCommand(Bukkit.getConsoleSender(), command)
-                    }.get()
-                    waitForLogsToFlush()
-                } catch (e: Exception) {
-                    e.printStackTrace(queuedPrintWriter)
+                    (LogManager.getRootLogger() as Logger).addAppender(appender)
+                    try {
+                        val dispatchCf = CompletableFuture<Unit>()
+                        server.scheduler.callSyncMethod(this) {
+                            server.dispatchCommand(Bukkit.getConsoleSender(), command)
+                            dispatchCf.complete(null)
+                        }
+                        CompletableFuture.anyOf(dispatchCf, disablingCf).get()
+                        waitForLogsToFlush()
+                    } catch (e: Exception) {
+                        e.printStackTrace(queuedPrintWriter)
+                    }
+                } finally {
+                    (LogManager.getRootLogger() as Logger).removeAppender(appender)
                 }
-            } finally {
-                (LogManager.getRootLogger() as Logger).removeAppender(appender)
             }
+            writerThread.join()
         }
-        writerThread.join()
     }
 
     private fun waitForLogsToFlush() {
+        if (disablingCf.isDone) return
+
         // It seems like the output of some commands is only delivered to our appender
         // asynchronously. I couldn't find a direct way to wait on whatever loggers involved
         // to flush, but I found that just waiting on the next game tick seems to (maybe just
@@ -92,6 +108,10 @@ class RconPlugin : JavaPlugin() {
         // There's a similar issue that some plugins' commands (especially any plugins using a
         // database) don't output any results until some unknown time later. This doesn't help
         // much for those, and I'm not sure if I intend to address that.
-        server.scheduler.callSyncMethod(this) { null }.get()
+        try {
+            server.scheduler.callSyncMethod(this) { null }.get()
+        } catch (e: CancellationException) {
+            // pass
+        }
     }
 }
