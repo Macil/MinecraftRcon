@@ -6,11 +6,9 @@ import org.bstats.bukkit.Metrics
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import tech.macil.minecraft.rcon.util.ByteArrayQueue
-import tech.macil.minecraft.rcon.util.StandardDataStream
 
 import java.io.*
 import java.util.logging.*
-import javax.servlet.AsyncContext
 import javax.servlet.ServletOutputStream
 import kotlin.concurrent.thread
 
@@ -48,31 +46,41 @@ class RconPlugin : JavaPlugin() {
         }
     }
 
-    private fun handleCommand(command: String, output: ServletOutputStream, async: AsyncContext) {
-        logger.log(Level.INFO, "rcon(${async.request.remoteAddr}): $command")
+    private fun handleCommand(command: String, output: ServletOutputStream, remoteAddr: String) {
+        logger.log(Level.INFO, "rcon($remoteAddr): $command")
 
         val (queuedInput, queuedOutput) = ByteArrayQueue.makePair()
 
-        output.setWriteListener(StandardDataStream(queuedInput, async, output))
-
-        thread {
-            PrintWriter(queuedOutput).use { queuedPrintWriter ->
-                val appender = RconAppender(queuedPrintWriter)
-                try {
-                    (LogManager.getRootLogger() as Logger).addAppender(appender)
-                    try {
-                        server.scheduler.callSyncMethod(this) {
-                            server.dispatchCommand(Bukkit.getConsoleSender(), command)
-                        }.get()
-                        waitForLogsToFlush()
-                    } catch (e: Exception) {
-                        e.printStackTrace(queuedPrintWriter)
+        val writerThread = thread {
+            output.use {
+                queuedInput.use {
+                    val buffer = ByteArray(4096)
+                    while (true) {
+                        val len = queuedInput.read(buffer)
+                        if (len < 0) break
+                        output.write(buffer, 0, len)
                     }
-                } finally {
-                    (LogManager.getRootLogger() as Logger).removeAppender(appender)
                 }
             }
         }
+
+        PrintWriter(queuedOutput).use { queuedPrintWriter ->
+            val appender = RconAppender(queuedPrintWriter)
+            try {
+                (LogManager.getRootLogger() as Logger).addAppender(appender)
+                try {
+                    server.scheduler.callSyncMethod(this) {
+                        server.dispatchCommand(Bukkit.getConsoleSender(), command)
+                    }.get()
+                    waitForLogsToFlush()
+                } catch (e: Exception) {
+                    e.printStackTrace(queuedPrintWriter)
+                }
+            } finally {
+                (LogManager.getRootLogger() as Logger).removeAppender(appender)
+            }
+        }
+        writerThread.join()
     }
 
     private fun waitForLogsToFlush() {

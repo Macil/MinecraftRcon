@@ -1,12 +1,11 @@
 package tech.macil.minecraft.rcon.web
 
-import javax.servlet.AsyncContext
 import javax.servlet.ServletOutputStream
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-typealias CommandServletHandler = (command: String, output: ServletOutputStream, asyncContext: AsyncContext) -> Unit
+typealias CommandServletHandler = (command: String, output: ServletOutputStream, remoteAddr: String) -> Unit
 
 class CommandServlet(
         private val handler: CommandServletHandler
@@ -17,7 +16,6 @@ class CommandServlet(
 
         resp.contentType = "text/plain"
 
-        val asyncContext = req.startAsync()
-        handler(command, resp.outputStream, asyncContext)
+        handler(command, resp.outputStream, req.remoteAddr)
     }
 }
