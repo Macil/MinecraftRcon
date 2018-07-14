@@ -12,6 +12,8 @@ import java.io.*
 import java.time.Duration
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.logging.*
 import javax.servlet.ServletOutputStream
 import kotlin.concurrent.thread
@@ -108,9 +110,14 @@ class RconPlugin : JavaPlugin() {
         // There's a similar issue that some plugins' commands (especially any plugins using a
         // database) don't output any results until some unknown time later. This doesn't help
         // much for those, and I'm not sure if I intend to address that.
+
+        // The timeout is because when the server is shutting down, the scheduled method never
+        // runs.
         try {
-            server.scheduler.callSyncMethod(this) { null }.get()
+            server.scheduler.callSyncMethod(this) { null }.get(500, TimeUnit.MILLISECONDS)
         } catch (e: CancellationException) {
+            // pass
+        } catch (e: TimeoutException) {
             // pass
         }
     }
