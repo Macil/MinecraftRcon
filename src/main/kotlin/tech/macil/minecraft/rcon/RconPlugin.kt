@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.logging.*
-import javax.servlet.ServletOutputStream
 import kotlin.concurrent.thread
 
 class RconPlugin : JavaPlugin() {
@@ -60,9 +59,9 @@ class RconPlugin : JavaPlugin() {
         }
     }
 
-    private fun handleCommand(command: String, output: ServletOutputStream, remoteAddr: String) {
+    private fun handleCommand(command: String, output: OutputStream, username: String?, remoteAddr: String) {
         runningRequestsCounter.acquire().use {
-            logger.log(Level.INFO, "rcon($remoteAddr): $command")
+            logger.log(Level.INFO, "rcon(${if (username != null) "$username@" else ""}$remoteAddr): $command")
 
             val (queuedInput, queuedOutput) = ByteArrayQueue.makePair()
 

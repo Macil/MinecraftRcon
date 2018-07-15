@@ -41,6 +41,10 @@ class AuthFilter(
         if (credSplit.size != 2) return false
 
         val (username, password) = credSplit
-        return authChecker.check(username, password)
+        val isAuthed = authChecker.check(username, password)
+        if (isAuthed) {
+            request.setAttribute("tech.macil.minecraft.rcon.Username", username)
+        }
+        return isAuthed
     }
 }

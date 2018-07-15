@@ -1,11 +1,11 @@
 package tech.macil.minecraft.rcon.web
 
-import javax.servlet.ServletOutputStream
+import java.io.OutputStream
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-typealias CommandServletHandler = (command: String, output: ServletOutputStream, remoteAddr: String) -> Unit
+typealias CommandServletHandler = (command: String, output: OutputStream, username: String?, remoteAddr: String) -> Unit
 
 class CommandServlet(
         private val handler: CommandServletHandler
@@ -14,8 +14,9 @@ class CommandServlet(
         val command = req.getParameter("command")
                 ?: return resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing command parameter")
 
-        resp.contentType = "text/plain"
+        val username = req.getAttribute("tech.macil.minecraft.rcon.Username") as String?
 
-        handler(command, resp.outputStream, req.remoteAddr)
+        resp.contentType = "text/plain"
+        handler(command, resp.outputStream, username, req.remoteAddr)
     }
 }
