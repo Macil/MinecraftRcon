@@ -97,3 +97,10 @@ username and password by using the `--user` flag.
 This plugin records some usage metrics to
 https://bstats.org/plugin/bukkit/Rcon. You can opt out of this by
 placing `enabled: false` in `plugins/bStats/config.yml`.
+
+## Sponge Alternative
+
+This plugin is only for Spigot. I don't plan on porting it to
+[Sponge](https://www.spongepowered.org/) because
+[Web-API](https://github.com/Valandur/Web-API) exists for Sponge and
+accomplishes what this plugin does and much more.
